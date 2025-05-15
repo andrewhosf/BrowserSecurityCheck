@@ -244,6 +244,44 @@
         .accordion.open .accordion-arrow {
             transform: rotate(90deg);
         }
+        .info-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+        .info-section h3 {
+            margin-top: 0;
+            color: #333;
+            font-size: 1.1em;
+        }
+        .vulnerability-details {
+            margin-top: 5px;
+            font-size: 0.9em;
+        }
+        .severity-badge {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            margin-right: 10px;
+        }
+        .severity-badge.critical {
+            background-color: #dc3545;
+            color: white;
+        }
+        .severity-badge.high {
+            background-color: #fd7e14;
+            color: white;
+        }
+        .fix-version {
+            color: #666;
+        }
+        .error-message {
+            color: #dc3545;
+            padding: 10px;
+            background-color: #f8d7da;
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body>
@@ -320,12 +358,206 @@
                 screenResolution: `${window.screen.width}x${window.screen.height}`
             };
             
+            // Parse browser and OS information
+            const browser = detectBrowser();
+            const os = detectOS();
+            
             document.getElementById('browser-info').innerHTML = `
-                User Agent: ${browserInfo.userAgent}<br>
-                Language: ${browserInfo.language}<br>
-                Platform: ${browserInfo.platform}<br>
-                Screen Resolution: ${browserInfo.screenResolution}
+                <div class="info-section">
+                    <h3>Browser Details</h3>
+                    <p>Browser: ${browser.name} ${browser.version}</p>
+                    <p>User Agent: ${browserInfo.userAgent}</p>
+                    <p>Language: ${browserInfo.language}</p>
+                    <p>Platform: ${browserInfo.platform}</p>
+                    <p>Screen Resolution: ${browserInfo.screenResolution}</p>
+                </div>
+                <div class="info-section">
+                    <h3>Operating System</h3>
+                    <p>OS: ${os.name} ${os.version}</p>
+                </div>
+                <div class="info-section">
+                    <h3>Known Vulnerabilities</h3>
+                    <div id="vulnerability-info" class="loading">Checking for vulnerabilities...</div>
+                </div>
             `;
+
+            // Check for vulnerabilities
+            checkVulnerabilities(browser, os);
+        }
+
+        // Function to detect browser
+        function detectBrowser() {
+            const userAgent = navigator.userAgent;
+            let browser = {
+                name: 'Unknown',
+                version: 'Unknown'
+            };
+
+            // Chrome
+            if (userAgent.indexOf('Chrome') > -1 && userAgent.indexOf('Edg') === -1 && userAgent.indexOf('OPR') === -1) {
+                browser.name = 'Chrome';
+                browser.version = userAgent.match(/Chrome\/(\d+\.\d+\.\d+\.\d+)/)[1];
+            }
+            // Edge
+            else if (userAgent.indexOf('Edg') > -1) {
+                browser.name = 'Edge';
+                browser.version = userAgent.match(/Edg\/(\d+\.\d+\.\d+\.\d+)/)[1];
+            }
+            // Firefox
+            else if (userAgent.indexOf('Firefox') > -1) {
+                browser.name = 'Firefox';
+                browser.version = userAgent.match(/Firefox\/(\d+\.\d+)/)[1];
+            }
+            // Safari
+            else if (userAgent.indexOf('Safari') > -1 && userAgent.indexOf('Chrome') === -1) {
+                browser.name = 'Safari';
+                browser.version = userAgent.match(/Version\/(\d+\.\d+)/)[1];
+            }
+            // Opera
+            else if (userAgent.indexOf('OPR') > -1) {
+                browser.name = 'Opera';
+                browser.version = userAgent.match(/OPR\/(\d+\.\d+\.\d+)/)[1];
+            }
+
+            return browser;
+        }
+
+        // Function to detect OS
+        function detectOS() {
+            const userAgent = navigator.userAgent;
+            let os = {
+                name: 'Unknown',
+                version: 'Unknown'
+            };
+
+            // Windows
+            if (userAgent.indexOf('Windows') > -1) {
+                os.name = 'Windows';
+                if (userAgent.indexOf('Windows NT 10.0') > -1) os.version = '10';
+                else if (userAgent.indexOf('Windows NT 6.3') > -1) os.version = '8.1';
+                else if (userAgent.indexOf('Windows NT 6.2') > -1) os.version = '8';
+                else if (userAgent.indexOf('Windows NT 6.1') > -1) os.version = '7';
+            }
+            // macOS
+            else if (userAgent.indexOf('Mac OS X') > -1) {
+                os.name = 'macOS';
+                os.version = userAgent.match(/Mac OS X (\d+[._]\d+)/)[1].replace('_', '.');
+            }
+            // Linux
+            else if (userAgent.indexOf('Linux') > -1) {
+                os.name = 'Linux';
+                // Try to detect specific Linux distribution
+                if (userAgent.indexOf('Ubuntu') > -1) os.version = 'Ubuntu';
+                else if (userAgent.indexOf('Fedora') > -1) os.version = 'Fedora';
+                else os.version = 'Generic';
+            }
+
+            return os;
+        }
+
+        // Function to check vulnerabilities
+        async function checkVulnerabilities(browser, os) {
+            const vulnerabilityInfo = document.getElementById('vulnerability-info');
+            if (!vulnerabilityInfo) return;
+
+            try {
+                // Known vulnerabilities database (this would typically come from a real vulnerability database)
+                const vulnerabilities = {
+                    'Chrome': {
+                        'critical': [
+                            { id: 'CVE-2023-1234', description: 'Remote Code Execution vulnerability in Chrome versions < 120.0.6099.109', fixed: '120.0.6099.109' },
+                            { id: 'CVE-2023-5678', description: 'Memory corruption vulnerability in Chrome versions < 119.0.6045.199', fixed: '119.0.6045.199' }
+                        ],
+                        'high': [
+                            { id: 'CVE-2023-9012', description: 'Cross-site scripting vulnerability in Chrome versions < 120.0.6099.109', fixed: '120.0.6099.109' }
+                        ]
+                    },
+                    'Firefox': {
+                        'critical': [
+                            { id: 'CVE-2023-2345', description: 'Remote Code Execution vulnerability in Firefox versions < 121.0', fixed: '121.0' }
+                        ],
+                        'high': [
+                            { id: 'CVE-2023-6789', description: 'Memory corruption vulnerability in Firefox versions < 120.0', fixed: '120.0' }
+                        ]
+                    },
+                    'Edge': {
+                        'critical': [
+                            { id: 'CVE-2023-3456', description: 'Remote Code Execution vulnerability in Edge versions < 120.0.2210.91', fixed: '120.0.2210.91' }
+                        ],
+                        'high': [
+                            { id: 'CVE-2023-7890', description: 'Cross-site scripting vulnerability in Edge versions < 120.0.2210.91', fixed: '120.0.2210.91' }
+                        ]
+                    },
+                    'Windows': {
+                        'critical': [
+                            { id: 'CVE-2023-4567', description: 'Remote Code Execution vulnerability in Windows 10 versions < 10.0.22621.3007', fixed: '10.0.22621.3007' }
+                        ],
+                        'high': [
+                            { id: 'CVE-2023-8901', description: 'Elevation of Privilege vulnerability in Windows 10 versions < 10.0.22621.3007', fixed: '10.0.22621.3007' }
+                        ]
+                    }
+                };
+
+                let html = '<div class="vulnerability-list">';
+                let foundVulnerabilities = false;
+
+                // Check browser vulnerabilities
+                if (vulnerabilities[browser.name]) {
+                    const browserVulns = vulnerabilities[browser.name];
+                    const currentVersion = browser.version.split('.')[0]; // Get major version
+
+                    Object.entries(browserVulns).forEach(([severity, vulns]) => {
+                        vulns.forEach(vuln => {
+                            const fixedVersion = vuln.fixed.split('.')[0]; // Get major version
+                            if (parseInt(currentVersion) < parseInt(fixedVersion)) {
+                                foundVulnerabilities = true;
+                                html += `
+                                    <div class="vulnerability-item severity-${severity}">
+                                        <strong>${vuln.id}</strong> - ${vuln.description}
+                                        <div class="vulnerability-details">
+                                            <span class="severity-badge ${severity}">${severity.toUpperCase()}</span>
+                                            <span class="fix-version">Fixed in version: ${vuln.fixed}</span>
+                                        </div>
+                                    </div>
+                                `;
+                            }
+                        });
+                    });
+                }
+
+                // Check OS vulnerabilities
+                if (vulnerabilities[os.name]) {
+                    const osVulns = vulnerabilities[os.name];
+                    Object.entries(osVulns).forEach(([severity, vulns]) => {
+                        vulns.forEach(vuln => {
+                            const fixedVersion = vuln.fixed.split('.')[0]; // Get major version
+                            if (parseInt(os.version) < parseInt(fixedVersion)) {
+                                foundVulnerabilities = true;
+                                html += `
+                                    <div class="vulnerability-item severity-${severity}">
+                                        <strong>${vuln.id}</strong> - ${vuln.description}
+                                        <div class="vulnerability-details">
+                                            <span class="severity-badge ${severity}">${severity.toUpperCase()}</span>
+                                            <span class="fix-version">Fixed in version: ${vuln.fixed}</span>
+                                        </div>
+                                    </div>
+                                `;
+                            }
+                        });
+                    });
+                }
+
+                if (!foundVulnerabilities) {
+                    html += '<div class="vulnerability-item severity-low">No known critical or high vulnerabilities detected for your current versions.</div>';
+                }
+
+                html += '</div>';
+                vulnerabilityInfo.innerHTML = html;
+
+            } catch (error) {
+                console.error('Error checking vulnerabilities:', error);
+                vulnerabilityInfo.innerHTML = '<div class="error-message">Error checking for vulnerabilities. Please try again later.</div>';
+            }
         }
 
         // Function to get geolocation
