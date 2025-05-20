@@ -1151,14 +1151,16 @@
 
         // Enhanced privacy check
         function checkPrivacy() {
-            const privacy = {
-                'Third-Party Cookies': detectThirdPartyCookies() ? 'Enabled' : 'Disabled',
-                'Tracking Protection': detectTrackingProtection() ? 'Enabled' : 'Disabled',
-                'Ad Blockers': detectAdBlockers() ? 'Detected' : 'Not Detected',
-                'Social Media Trackers': detectSocialTrackers() ? 'Detected' : 'Not Detected',
-                'Analytics Trackers': detectAnalytics() ? 'Detected' : 'Not Detected'
-            };
-            return privacy;
+            return new Promise((resolve) => {
+                const privacy = {
+                    'Third-Party Cookies': detectThirdPartyCookies() ? 'Enabled' : 'Disabled',
+                    'Tracking Protection': detectTrackingProtection() ? 'Enabled' : 'Disabled',
+                    'Ad Blockers': detectAdBlockers() ? 'Detected' : 'Not Detected',
+                    'Social Media Trackers': detectSocialTrackers() ? 'Detected' : 'Not Detected',
+                    'Analytics Trackers': detectAnalytics() ? 'Detected' : 'Not Detected'
+                };
+                resolve(privacy);
+            });
         }
 
         // Check for third-party cookies
@@ -1869,10 +1871,11 @@
             if (!isOpen) panel.classList.add('open');
         }
 
-        // Add privacy protection display (reuse privacy info from checkPrivacy)
+        // Add privacy protection display
         function displayPrivacyProtection() {
             const privacyDiv = document.getElementById('privacy-protection-list');
             if (!privacyDiv) return;
+            
             checkPrivacy().then(privacy => {
                 let html = '<table style="width:100%;border-collapse:collapse;">';
                 html += '<tr style="background:#f5f5f5;"><th style="text-align:left;padding:6px;">Feature</th><th style="text-align:left;padding:6px;">Status</th></tr>';
@@ -1884,6 +1887,13 @@
                 });
                 html += '</table>';
                 privacyDiv.innerHTML = html;
+            }).catch(error => {
+                privacyDiv.innerHTML = `
+                    <div class="error-message">
+                        <p>Error checking privacy settings</p>
+                        <p class="error-details">${error.message}</p>
+                    </div>
+                `;
             });
         }
 
