@@ -1909,7 +1909,14 @@
     </script>
     <!-- Add Google Maps JavaScript API -->
     <script async defer
-        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCs5JiyJ5BP6bA2KL-BrxNja61psUKmWI4">
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCs5JiyJ5BP6bA2KL-BrxNja61psUKmWI4&callback=initMap">
+    </script>
+    <script>
+        // Initialize map when Google Maps API is loaded
+        function initMap() {
+            // The map will be initialized when getGeolocation is called
+            console.log('Google Maps API loaded successfully');
+        }
     </script>
 </body>
 </html> 
